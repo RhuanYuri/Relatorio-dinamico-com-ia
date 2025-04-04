@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: vendas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  node-app:
+    build:
+      context: ./node-app  # Diretório onde está o Dockerfile do Node.js
+    container_name: node-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://user:password@postgres:5432/vendas_db
+    depends_on:
+      - postgres
+
+  php-app:
+    image: php:8.2-apache
+    container_name: php-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./php:/var/www/html
+
+volumes:
+  postgres-data:
